@@ -10,6 +10,8 @@ using CustomizePlus.Profiles;
 using CustomizePlus.Configuration.Helpers;
 using CustomizePlus.Game.Services;
 using CustomizePlus.GameData.Services;
+using System;
+using IPCProfileDataTuple = (string Name, string characterName, bool IsEnabled, System.Guid ID);
 
 namespace CustomizePlus.UI.Windows.MainWindow.Tabs.Debug;
 
@@ -27,12 +29,17 @@ public class IPCTestTab //: IDisposable
     private readonly ICallGateSubscriber<Character?, string>? _getProfileFromCharacter;
     private readonly ICallGateSubscriber<Character?, object>? _revertCharacter;
     //private readonly ICallGateSubscriber<string?, string?, object?>? _onProfileUpdate;
+    private readonly ICallGateSubscriber<IPCProfileDataTuple[]>? _GetProfileList;
+    private readonly ICallGateSubscriber<Guid, object>? _EnableProfileByUniqueId;
+    private readonly ICallGateSubscriber<Guid, object>? _DisableProfileByUniqueId;
 
     private string? _rememberedProfileJson;
 
     private (int, int) _apiVersion;
 
     private string? _targetCharacterName;
+
+    private string _targetProfileID = "";
 
     public IPCTestTab(
         DalamudPluginInterface pluginInterface,
@@ -63,6 +70,9 @@ public class IPCTestTab //: IDisposable
         _revertCharacter = pluginInterface.GetIpcSubscriber<Character?, object>("CustomizePlus.RevertCharacter");
         /*_onProfileUpdate = pluginInterface.GetIpcSubscriber<string?, string?, object?>("CustomizePlus.OnProfileUpdate");
         _onProfileUpdate.Subscribe(OnProfileUpdate);*/
+        _GetProfileList = pluginInterface.GetIpcSubscriber<IPCProfileDataTuple[]>("CustomizePlus.GetProfileList");
+        _EnableProfileByUniqueId = pluginInterface.GetIpcSubscriber<Guid, object>("CustomizePlus.EnableProfileByUniqueId");
+        _DisableProfileByUniqueId = pluginInterface.GetIpcSubscriber<Guid, object>("CustomizePlus.DisableProfileByUniqueId");
     }
     /* public void Dispose()
      {
@@ -138,6 +148,25 @@ public class IPCTestTab //: IDisposable
 
             _revertCharacter!.InvokeAction(FindCharacterByAddress(actors[0].Item2.Address));
             _popupSystem.ShowPopup("ipc_revert_done");
+        }
+
+        if (ImGui.Button("Copy profile list to clipboard"))
+        {
+            ImGui.SetClipboardText(string.Join("\n", _GetProfileList!.InvokeFunc().Select(x => $"{x.Name}, {x.characterName}, {x.IsEnabled}, {x.ID}")));
+        }
+
+        ImGui.Text("Profile GUID to set:");
+        ImGui.SameLine();
+        ImGui.InputText("##profileguid", ref _targetProfileID, 128);
+
+        if (ImGui.Button("Enable profile by GUID"))
+        {
+            _EnableProfileByUniqueId!.InvokeAction(Guid.Parse(_targetProfileID));
+        }
+
+        if (ImGui.Button("Disable profile by GUID"))
+        {
+            _DisableProfileByUniqueId!.InvokeAction(Guid.Parse(_targetProfileID));
         }
     }
 

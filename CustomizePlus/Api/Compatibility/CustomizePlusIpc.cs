@@ -21,6 +21,11 @@ using CustomizePlus.Core.Extensions;
 using CustomizePlus.Armatures.Events;
 using CustomizePlus.Armatures.Data;
 using CustomizePlus.GameData.Extensions;
+using CustomizePlus.Templates;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using CustomizePlus.Profiles.Enums;
+using IPCProfileDataTuple = (string Name, string characterName, bool IsEnabled, System.Guid ID);
 
 namespace CustomizePlus.Api.Compatibility;
 
@@ -42,6 +47,9 @@ public class CustomizePlusIpc : IDisposable
     public const string SetProfileToCharacterLabel = $"CustomizePlus.{nameof(SetProfileToCharacter)}";
     public const string RevertCharacterLabel = $"CustomizePlus.{nameof(RevertCharacter)}";
     public const string OnProfileUpdateLabel = $"CustomizePlus.{nameof(OnProfileUpdate)}";
+    public const string GetProfileListLabel = $"CustomizePlus.{nameof(GetProfileList)}";
+    public const string EnableProfileByUniqueIdLabel = $"CustomizePlus.{nameof(EnableProfileByUniqueId)}";
+    public const string DisableProfileByUniqueIdLabel = $"CustomizePlus.{nameof(DisableProfileByUniqueId)}";
     public static readonly (int, int) ApiVersion = (3, 0);
 
     //Sends local player's profile every time their active profile is changed
@@ -51,6 +59,9 @@ public class CustomizePlusIpc : IDisposable
     internal ICallGateProvider<string, Character?, object>? ProviderSetProfileToCharacter;
     internal ICallGateProvider<Character?, string?>? ProviderGetProfileFromCharacter;
     internal ICallGateProvider<(int, int)>? ProviderGetApiVersion;
+    internal ICallGateProvider<IPCProfileDataTuple[]>? ProviderGetProfileList;
+    internal ICallGateProvider<Guid, object>? ProviderEnableProfileByUniqueId;
+    internal ICallGateProvider<Guid, object>? ProviderDisableProfileByUniqueId;
 
     public CustomizePlusIpc(
         IObjectTable objectTable,
@@ -168,7 +179,7 @@ public class CustomizePlusIpc : IDisposable
         {
             _logger.Error($"Error registering legacy Customize+ IPC provider for {RevertCharacterLabel}: {ex}");
         }
-        
+
         try
         {
             ProviderOnProfileUpdate = _pluginInterface.GetIpcProvider<string?, string?, object?>(OnProfileUpdateLabel);
@@ -176,6 +187,38 @@ public class CustomizePlusIpc : IDisposable
         catch (Exception ex)
         {
             _logger.Error($"Error registering legacy Customize+ IPC provider for {OnProfileUpdateLabel}: {ex}");
+        }
+
+        try
+        {
+            ProviderGetProfileList = _pluginInterface.GetIpcProvider<IPCProfileDataTuple[]>(GetProfileListLabel);
+            ProviderGetProfileList.RegisterFunc(GetProfileList);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Error registering Customize+ IPC provider for {GetProfileListLabel}: {ex}");
+        }
+
+        try
+        {
+            ProviderEnableProfileByUniqueId =
+                _pluginInterface.GetIpcProvider<Guid, object>(EnableProfileByUniqueIdLabel);
+            ProviderEnableProfileByUniqueId.RegisterAction(EnableProfileByUniqueId);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Error registering Customize+ IPC provider for {EnableProfileByUniqueIdLabel}: {ex}");
+        }
+
+        try
+        {
+            ProviderDisableProfileByUniqueId =
+                _pluginInterface.GetIpcProvider<Guid, object>(DisableProfileByUniqueIdLabel);
+            ProviderDisableProfileByUniqueId.RegisterAction(DisableProfileByUniqueId);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Error registering Customize+ IPC provider for {DisableProfileByUniqueIdLabel}: {ex}");
         }
     }
 
@@ -186,6 +229,9 @@ public class CustomizePlusIpc : IDisposable
         ProviderRevertCharacter?.UnregisterAction();
         ProviderGetApiVersion?.UnregisterFunc();
         ProviderOnProfileUpdate?.UnregisterFunc();
+        ProviderGetProfileList?.UnregisterFunc();
+        ProviderEnableProfileByUniqueId?.UnregisterAction();
+        ProviderDisableProfileByUniqueId?.UnregisterAction();
     }
 
     private void OnProfileUpdate(Profile? profile)
@@ -285,5 +331,20 @@ public class CustomizePlusIpc : IDisposable
     private (Profile, Template) GetProfileFromVersion3(Version3Profile profile)
     {
         return V3ProfileToV4Converter.Convert(profile);
+    }
+
+    private IPCProfileDataTuple[] GetProfileList()
+    {
+        return _profileManager.Profiles.Where(x => x.ProfileType == ProfileType.Normal).Select(x => (x.Name.Text, x.CharacterName.Text, x.Enabled, x.UniqueId)).ToArray();
+    }
+
+    private void EnableProfileByUniqueId(Guid UniqueID)
+    {
+        _profileManager.SetEnabled(UniqueID, true);
+    }
+
+    private void DisableProfileByUniqueId(Guid UniqueID)
+    {
+        _profileManager.SetEnabled(UniqueID, false);
     }
 }
