@@ -1,20 +1,20 @@
 [submodule "submodules/OtterGui"]
 	path = submodules/OtterGui
-	url = https://github.com/Ottermandias/OtterGui.git
+	url = https://github.com/jqnxokbmeoiqwncv/OtterGui.git
 	branch = main
 [submodule "submodules/Penumbra.GameData"]
 	path = submodules/Penumbra.GameData
-	url = https://github.com/Ottermandias/Penumbra.GameData
+	url = https://github.com/jqnxokbmeoiqwncv/Penumbra.GameData
 	branch = main
 [submodule "submodules/Penumbra.Api"]
 	path = submodules/Penumbra.Api
-	url = https://github.com/Ottermandias/Penumbra.Api.git
+	url = https://github.com/jqnxokbmeoiqwncv/Penumbra.Api.git
 	branch = main
 [submodule "submodules/Penumbra.String"]
 	path = submodules/Penumbra.String
-	url = https://github.com/Ottermandias/Penumbra.String.git
+	url = https://github.com/jqnxokbmeoiqwncv/Penumbra.String.git
 	branch = main
 [submodule "submodules/ECommons"]
 	path = submodules/ECommons
-	url = https://github.com/NightmareXIV/ECommons.git
+	url = https://github.com/jqnxokbmeoiqwncv/ECommons.git
 	branch = master
