@@ -20,6 +20,7 @@ using IPCProfileDataTuple = (System.Guid UniqueId, string Name, string VirtualPa
 using OtterGui.Log;
 using CustomizePlus.Core.Extensions;
 using CustomizePlus.Configuration.Data;
+using CustomizePlus.Api.Data;
 
 namespace CustomizePlus.UI.Windows.MainWindow.Tabs.Debug;
 
@@ -147,7 +148,7 @@ public class IPCTestTab //: IDisposable
         ImGui.SameLine();
         ImGui.InputText("##operateon", ref _targetCharacterName, 128);
 
-        if (ImGui.Button("Copy current profile into memory as V3"))
+        if (ImGui.Button("Copy current profile into memory"))
         {
             var actors = _gameObjectService.FindActorsByName(_targetCharacterName).ToList();
             if (actors.Count == 0)
@@ -160,8 +161,8 @@ public class IPCTestTab //: IDisposable
             if (profile == null)
                 return;
 
-            _rememberedProfileJson = JsonConvert.SerializeObject(V4ProfileToV3Converter.Convert(profile));
-            _popupSystem.ShowPopup(PopupSystem.Messages.IPCV4ProfileRemembered);
+            _rememberedProfileJson = JsonConvert.SerializeObject(IPCCharacterProfile.FromFullProfile(profile));
+            _popupSystem.ShowPopup(PopupSystem.Messages.IPCProfileRemembered);
         }
 
         if (ImGui.Button("GetActiveProfileIdOnCharacter into clipboard"))
@@ -255,7 +256,7 @@ public class IPCTestTab //: IDisposable
             if (result == 0)
             {
                 _rememberedProfileJson = profileJson;
-                _popupSystem.ShowPopup(PopupSystem.Messages.IPCV4ProfileRemembered);
+                _popupSystem.ShowPopup(PopupSystem.Messages.IPCProfileRemembered);
             }
             else
             {
