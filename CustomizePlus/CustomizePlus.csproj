@@ -22,6 +22,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <CopyLocalLockfileAssemblies>true</CopyLocalLockfileAssemblies>
     <OutputPath>bin\$(Configuration)\</OutputPath>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <ItemGroup>
