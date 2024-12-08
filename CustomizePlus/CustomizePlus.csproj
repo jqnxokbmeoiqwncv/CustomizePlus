@@ -23,6 +23,7 @@
     <CopyLocalLockfileAssemblies>true</CopyLocalLockfileAssemblies>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
 
   <ItemGroup>
